@@ -4,7 +4,7 @@ env:
   BUILD_TYPE: Release
 jobs:
   build:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v2
         with:
@@ -21,3 +21,24 @@ jobs:
         shell: bash
         run: |
           cmake --build $GITHUB_WORKSPACE/build -j4
+
+      - name: Host regression tests
+        run: |
+          cmake -S tests/host -B build/host -DCMAKE_BUILD_TYPE=$BUILD_TYPE
+          cmake --build build/host -j4
+          ctest --test-dir build/host --output-on-failure
+
+  big-endian:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install PowerPC toolchain and emulator
+        run: sudo apt-get update && sudo apt-get install -y gcc-powerpc-linux-gnu qemu-user
+      - name: Host regression tests on big-endian PowerPC
+        run: |
+          cmake -S tests/host -B build/host-ppc -DCMAKE_BUILD_TYPE=$BUILD_TYPE \
+            -DCMAKE_SYSTEM_NAME=Linux -DCMAKE_SYSTEM_PROCESSOR=powerpc \
+            -DCMAKE_C_COMPILER=powerpc-linux-gnu-gcc \
+            '-DCMAKE_CROSSCOMPILING_EMULATOR=qemu-ppc;-L;/usr/powerpc-linux-gnu'
+          cmake --build build/host-ppc -j4
+          ctest --test-dir build/host-ppc --output-on-failure

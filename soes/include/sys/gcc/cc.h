@@ -3,6 +3,17 @@
  * LICENSE file in the project root for full license information
  */
 
+#ifndef SOES_CC_H
+#define SOES_CC_H
+
+#include <sys/param.h>
+#ifdef __linux__
+   #include <endian.h>
+#else
+   #include <machine/endian.h>
+#endif
+
+/* Keep the shared compiler definitions compatible with OSAL's CC_H guard. */
 #ifndef CC_H
 #define CC_H
 
@@ -15,12 +26,6 @@ extern "C"
 #include <stdint.h>
 #include <stddef.h>
 #include <inttypes.h>
-#include <sys/param.h>
-#ifdef __linux__
-   #include <endian.h>
-#else
-   #include <machine/endian.h>
-#endif
 
 #ifndef MIN
 #define MIN(a,b) (((a)<(b))?(a):(b))
@@ -66,12 +71,6 @@ extern "C"
 #define etohs(x) htoes (x)
 #define etohl(x) htoel (x)
 
-#if BYTE_ORDER == LITTLE_ENDIAN
-#define EC_LITTLE_ENDIAN
-#else
-#define EC_BIG_ENDIAN
-#endif
-
 #ifdef ESC_DEBUG
 #ifdef __rtk__
 #include <kern/rprint.h>
@@ -89,3 +88,12 @@ extern "C"
 #endif
 
 #endif /* CC_H */
+
+/* These SOES flags are also needed when OSAL provides the CC_* macros. */
+#if BYTE_ORDER == LITTLE_ENDIAN
+#define EC_LITTLE_ENDIAN
+#else
+#define EC_BIG_ENDIAN
+#endif
+
+#endif /* SOES_CC_H */
